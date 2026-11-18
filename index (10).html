@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IB SEHS SL A.2 Hydration &amp; Nutrition – Interactive Crossword</title>
+<style>
+  :root{
+    --navy:#0f2a44; --navy2:#173a5e; --ink:#1e293b; --muted:#64748b; --line:#cbd5e1;
+    --bg:#f1f5f9; --card:#ffffff; --accent:#14b8a6;
+    --t1:#2563eb; --t1bg:#dbeafe;   /* A.2.1 water */
+    --t2:#ea580c; --t2bg:#ffedd5;   /* A.2.2 fuel  */
+    --t3:#7c3aed; --t3bg:#ede9fe;   /* A.2.3 energy */
+    --word:#fef9c3; --active:#facc15; --good:#16a34a; --goodbg:#dcfce7; --bad:#dc2626; --badbg:#fee2e2;
+    --cs:32px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 20px 16px}
+  header .wrap{max-width:1300px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+  h1{margin:0;font-size:1.35rem;letter-spacing:.2px}
+  h1 small{display:block;font-weight:500;font-size:.85rem;opacity:.8;margin-top:3px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap}
+  .stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 12px;font-size:.85rem;text-align:center;min-width:84px}
+  .stat b{display:block;font-size:1.1rem}
+  main{max-width:1300px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:16px}
+  @media (max-width:900px){main{grid-template-columns:1fr;padding:10px} .cluebar{position:sticky;top:0;z-index:5} .stat{min-width:64px;padding:4px 8px}}
+  .card{background:var(--card);border-radius:14px;box-shadow:0 1px 3px rgba(15,42,68,.08),0 4px 16px rgba(15,42,68,.05);padding:14px}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .tag.t1{background:var(--t1bg);color:var(--t1)} .tag.t2{background:var(--t2bg);color:var(--t2)} .tag.t3{background:var(--t3bg);color:var(--t3)}
+  .cluebar{display:flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border-radius:10px;padding:8px 10px;margin-bottom:12px;min-height:54px}
+  .cluebar button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:8px;width:34px;height:34px;font-size:1.1rem;cursor:pointer;flex:none}
+  .cluebar button:hover{background:rgba(255,255,255,.22)}
+  .cluebar .txt{flex:1;font-size:.95rem;line-height:1.3}
+  .cluebar .txt .lab{font-weight:700;margin-right:6px}
+  .gridwrap{overflow-x:auto;padding:4px 0 8px}
+  main>*{min-width:0}
+  .grid{display:grid;gap:0;user-select:none;width:max-content;margin:0 auto;padding:1px}
+  .cell{position:relative;width:var(--cs);height:var(--cs);border:1px solid #334155;margin:-.5px;background:#fff}
+  .empty{width:var(--cs);height:var(--cs)}
+  .cell .num{position:absolute;top:1px;left:2px;font-size:calc(var(--cs)*.28);line-height:1;color:#334155;pointer-events:none;font-weight:600}
+  .cell input{width:100%;height:100%;border:0;background:transparent;text-align:center;font-weight:700;font-size:calc(var(--cs)*.56);text-transform:uppercase;color:var(--ink);padding:calc(var(--cs)*.12) 0 0;caret-color:transparent;outline:none;border-radius:0;font-family:inherit}
+  .cell.inword{background:var(--word)}
+  .cell.active{background:var(--active)}
+  .cell.good{background:var(--goodbg)} .cell.good input{color:var(--good)}
+  .cell.bad{background:var(--badbg)} .cell.bad input{color:var(--bad)}
+  .cell.revealed input{color:#7c3aed}
+  .cell.inword.good,.cell.inword.bad{box-shadow:inset 0 0 0 2px var(--active)}
+  .cell.active.good,.cell.active.bad{box-shadow:inset 0 0 0 3px #ca8a04}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:center}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:8px 12px;font-size:.88rem;font-weight:600;cursor:pointer}
+  .btn:hover{border-color:var(--navy);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(.95)}
+  .btn.ghost{color:var(--muted)}
+  .opts{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:10px;font-size:.85rem;color:var(--muted)}
+  .opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .clues{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:1150px) and (min-width:901px){.clues{grid-template-columns:1fr}}
+  @media (max-width:560px){.clues{grid-template-columns:1fr}}
+  .clues h2{font-size:1rem;margin:0 0 8px;color:var(--navy);border-bottom:2px solid var(--navy);padding-bottom:4px}
+  .clues ol{list-style:none;margin:0;padding:0;max-height:70vh;overflow:auto}
+  @media (max-width:900px){.clues ol{max-height:none}}
+  .clues li{display:grid;grid-template-columns:28px 1fr;gap:4px;padding:7px 6px;border-radius:8px;cursor:pointer;font-size:.88rem;line-height:1.35;border-left:4px solid transparent}
+  .clues li:hover{background:#f8fafc}
+  .clues li.t1{border-left-color:var(--t1)} .clues li.t2{border-left-color:var(--t2)} .clues li.t3{border-left-color:var(--t3)}
+  .clues li.sel{background:var(--word)}
+  .clues li.done{color:var(--muted)} .clues li.done .ct{text-decoration:line-through}
+  .clues li .n{font-weight:700}
+  .clues li .meta{display:flex;gap:6px;align-items:center;margin-top:3px}
+  .clues li .meta .tag{font-size:.66rem;padding:1px 7px}
+  .enum{color:var(--muted);font-size:.8rem;white-space:nowrap}
+  .bank{margin-top:14px;display:none}
+  .bank.show{display:block}
+  .bank h3{font-size:.9rem;margin:0 0 6px;color:var(--navy)}
+  .bank .words{display:flex;flex-wrap:wrap;gap:6px}
+  .bank .words span{font-size:.75rem;background:#f1f5f9;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-weight:600;letter-spacing:.3px}
+  .bank .words span.used{opacity:.35;text-decoration:line-through}
+  .overlay{position:fixed;inset:0;background:rgba(15,42,68,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:16px;padding:26px 26px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .modal h2{margin:0 0 6px;color:var(--navy)}
+  .modal p{color:var(--muted);margin:6px 0}
+  .modal .big{font-size:2rem;font-weight:800;color:var(--accent);margin:8px 0}
+  footer{text-align:center;color:var(--muted);font-size:.78rem;padding:4px 16px 24px}
+  @media print{
+    header .stats,.toolbar,.opts,.cluebar,footer,.bank{display:none!important}
+    body{background:#fff} main{display:block;padding:0} .card{box-shadow:none;padding:0;margin-bottom:12px}
+    .cell,.cell.inword,.cell.active{background:#fff!important;box-shadow:none!important}
+    .clues ol{max-height:none} .clues li{break-inside:avoid;padding:3px 0}
+    header{background:#fff;color:#000;padding:0 0 8px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>A.2 Hydration &amp; Nutrition — Key Vocab Crossword
+      <small>IB Sports, Exercise &amp; Health Science · SL · 30 terms · A.2.1 · A.2.2 · A.2.3</small>
+    </h1>
+    <div class="stats">
+      <div class="stat"><b id="sTime">0:00</b>Time</div>
+      <div class="stat"><b id="sFill">0%</b>Filled</div>
+      <div class="stat"><b id="sWords">–</b>Correct</div>
+      <div class="stat"><b id="sHints">0</b>Hints</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="legend">
+      <span class="tag t1">● A.2.1 Water &amp; electrolyte balance</span>
+      <span class="tag t2">● A.2.2 Fuelling for health &amp; performance</span>
+      <span class="tag t3">● A.2.3 Energy systems</span>
+    </div>
+    <div class="cluebar">
+      <button id="prevClue" title="Previous clue" aria-label="Previous clue">‹</button>
+      <div class="txt" id="clueBar">Click a square or a clue to start.</div>
+      <button id="nextClue" title="Next clue" aria-label="Next clue">›</button>
+    </div>
+    <div class="gridwrap" id="gridWrap"><div class="grid" id="grid"></div></div>
+    <div class="toolbar">
+      <button class="btn primary" id="checkAll">Check puzzle</button>
+      <button class="btn" id="checkWord">Check word</button>
+      <button class="btn" id="revealLetter">Reveal letter</button>
+      <button class="btn" id="revealWord">Reveal word</button>
+      <button class="btn ghost" id="clearBtn">Clear all</button>
+      <button class="btn ghost" id="revealAll">Reveal all</button>
+      <button class="btn ghost" id="newLayout">New layout</button>
+      <button class="btn ghost" id="printBtn">Print</button>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="instant"> Instant feedback</label>
+      <label><input type="checkbox" id="showBank"> Show word bank</label>
+    </div>
+    <div class="bank" id="bank"><h3>Word bank</h3><div class="words" id="bankWords"></div></div>
+  </section>
+
+  <section class="card">
+    <div class="clues">
+      <div><h2>Across</h2><ol id="across"></ol></div>
+      <div><h2>Down</h2><ol id="down"></ol></div>
+    </div>
+  </section>
+</main>
+
+<footer>Type straight into the grid. Arrow keys move · Space or clicking the same square switches direction · Tab / Enter jumps to the next clue · Backspace deletes. Progress saves automatically on this device.</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Crossword complete! 🏆</h2>
+    <div class="big" id="mTime">0:00</div>
+    <p id="mMsg"></p>
+    <div class="toolbar"><button class="btn primary" id="mClose">Close</button><button class="btn" id="mAgain">Try a new layout</button></div>
+  </div>
+</div>
+
+<!-- ===================== DATA + GENERATOR ===================== -->
+<script id="engine">
+/* 30 key terms: 10 from each sub-topic. Answers are typed without spaces/hyphens. */
+var WORDS = [
+  // ---------- A.2.1 Water and electrolyte balance ----------
+  {a:"DEHYDRATION",          t:1, e:"11",    c:"Excessive loss of body water; athletes should aim to lose no more than 2% of body mass this way"},
+  {a:"HYPONATREMIA",         t:1, e:"12",    c:"Low plasma sodium concentration (below 135 mmol/L) caused by drinking too much fluid without sodium"},
+  {a:"HYPERNATREMIA",        t:1, e:"13",    c:"High plasma sodium concentration (above 145 mmol/L) that occurs as a result of dehydration"},
+  {a:"ADH",                  t:1, e:"3",     c:"Hormone released by the pituitary gland that increases water reabsorption in the collecting duct (abbreviation)"},
+  {a:"HYPOTHALAMUS",         t:1, e:"12",    c:"Part of the brain that detects increased body-fluid concentration, triggers thirst and signals the pituitary gland"},
+  {a:"OSMOLARITY",           t:1, e:"10",    c:"Concentration of solutes in a solution; measured in urine to assess hydration status"},
+  {a:"ELECTROLYTES",         t:1, e:"12",    c:"Minerals such as sodium and potassium that are lost in sweat and regulated by the hypothalamus, pituitary gland and kidneys"},
+  {a:"CARDIOVASCULARDRIFT",  t:1, e:"14,5",  c:"Rise in heart rate and fall in stroke volume during prolonged submaximal exercise, caused by fluid loss and rising core temperature"},
+  {a:"HYDROMETER",           t:1, e:"10",    c:"Device that measures urine specific gravity to monitor an athlete's hydration status"},
+  {a:"INTRACELLULARFLUID",   t:1, e:"13,5",  c:"Body fluid inside cells; makes up two-thirds of total body fluid and is high in potassium"},
+  // ---------- A.2.2 Fuelling for health and performance ----------
+  {a:"MACRONUTRIENTS",       t:2, e:"14",    c:"Carbohydrates, lipids and proteins: nutrients needed in large amounts that provide energy"},
+  {a:"GLYCOGEN",             t:2, e:"8",     c:"Stored form of glucose found in skeletal muscle and the liver"},
+  {a:"TRIGLYCERIDE",         t:2, e:"12",    c:"Lipid composed of one glycerol molecule and three fatty acid molecules (also called triacylglycerol)"},
+  {a:"AMINOACIDS",           t:2, e:"5,5",   c:"Molecules containing carbon, hydrogen, oxygen and nitrogen that join by peptide bonds to form proteins"},
+  {a:"GLYCEMICINDEX",        t:2, e:"8,5",   c:"Ranking of carbohydrates by their immediate effect on blood glucose compared with a reference food such as pure glucose"},
+  {a:"CONDENSATIONREACTION", t:2, e:"12,8",  c:"Reaction in which two glucose molecules join to form a disaccharide and a water molecule is released"},
+  {a:"POLYSACCHARIDE",       t:2, e:"14",    c:"Carbohydrate made of ten or more monosaccharide units, such as starch"},
+  {a:"ERGOGENICAID",         t:2, e:"9,3",   c:"Substance such as caffeine, creatine or sodium bicarbonate taken to enhance performance"},
+  {a:"ENERGYAVAILABILITY",   t:2, e:"6,12",  c:"Dietary energy intake minus exercise energy expenditure, divided by fat-free mass"},
+  {a:"REDS",                 t:2, e:"3-1",   c:"Syndrome caused by prolonged low energy availability that impairs metabolism, bone strength and immune function (abbreviation)"},
+  // ---------- A.2.3 Energy systems ----------
+  {a:"ATP",                  t:3, e:"3",     c:"Energy currency of the cell; breaks down to ADP + Pi to release energy for muscle contraction (abbreviation)"},
+  {a:"PHOSPHOCREATINE",      t:3, e:"15",    c:"Fuel of the ATP\u2013CP system, stored in muscle and broken down to resynthesise ATP during maximal efforts of up to about 10 seconds"},
+  {a:"ANAEROBICGLYCOLYSIS",  t:3, e:"9,10",  c:"Breakdown of glucose to pyruvate without oxygen, giving a net yield of 2 ATP"},
+  {a:"LACTICACID",           t:3, e:"6,4",   c:"Fatigue-causing by-product formed from pyruvate when oxygen is not available"},
+  {a:"KREBSCYCLE",           t:3, e:"5,5",   c:"Series of reactions in the mitochondria that acetyl CoA enters during aerobic metabolism"},
+  {a:"ELECTRONTRANSPORTCHAIN",t:3,e:"8,9,5", c:"Stage of aerobic metabolism on the inner mitochondrial membrane that produces the greatest ATP yield"},
+  {a:"BETAOXIDATION",        t:3, e:"4,9",   c:"Breakdown of fatty acids into acetyl CoA before they enter the Krebs cycle"},
+  {a:"CATABOLISM",           t:3, e:"10",    c:"Breakdown of complex molecules into simpler ones, usually releasing energy"},
+  {a:"VO2MAX",               t:3, e:"V,O,2,max \u2192 type VO2MAX", c:"Maximal rate at which an individual can take in and use oxygen"},
+  {a:"RUNNINGECONOMY",       t:3, e:"7,7",   c:"Oxygen cost of running at a given submaximal speed; along with VO\u2082 max it determines endurance performance"}
+];
+
+function mulberry32(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* Builds a crossword layout containing every word. Returns {rows, cols, placed:[{i,r,c,d}]} */
+function buildCrossword(words, seed){
+  var best=null, N=words.length;
+  for(var attempt=0; attempt<150; attempt++){
+    var rnd=mulberry32(seed*7919+attempt*104729+1);
+    var order=words.map(function(w,i){return {i:i,k:w.a.length+rnd()*4};}).sort(function(x,y){return y.k-x.k;}).map(function(o){return o.i;});
+    var cells={}; // "r,c" -> {ch, h:bool, v:bool}
+    var placed=[]; var minR=0,maxR=0,minC=0,maxC=0;
+    function get(r,c){return cells[r+","+c];}
+    function canPlace(w,r,c,d){
+      var dr=d?1:0, dc=d?0:1, inter=0, L=w.length;
+      var b=get(r-dr,c-dc), a=get(r+dr*L,c+dc*L);
+      if(b||a) return -1;
+      for(var k=0;k<L;k++){
+        var rr=r+dr*k, cc=c+dc*k, cell=get(rr,cc);
+        if(cell){
+          if(cell.ch!==w[k]) return -1;
+          if(d? cell.v : cell.h) return -1;
+          inter++;
+        }else{
+          // perpendicular neighbours must be empty
+          if(get(rr+dc,cc+dr)||get(rr-dc,cc-dr)) return -1;
+        }
+      }
+      if(inter===L) return -1;
+      return inter;
+    }
+    function doPlace(idx,r,c,d){
+      var w=words[idx].a, dr=d?1:0, dc=d?0:1;
+      for(var k=0;k<w.length;k++){
+        var rr=r+dr*k, cc=c+dc*k, key=rr+","+cc;
+        if(!cells[key]) cells[key]={ch:w[k],h:false,v:false};
+        if(d) cells[key].v=true; else cells[key].h=true;
+        if(rr<minR)minR=rr; if(rr>maxR)maxR=rr; if(cc<minC)minC=cc; if(cc>maxC)maxC=cc;
+      }
+      placed.push({i:idx,r:r,c:c,d:d});
+    }
+    var first=order[0]; doPlace(first,0,0,0);
+    var pending=order.slice(1);
+    for(var pass=0; pass<4 && pending.length; pass++){
+      var next=[];
+      for(var p=0;p<pending.length;p++){
+        var idx=pending[p], w=words[idx].a, cands=[];
+        for(var key in cells){
+          var cell=cells[key]; var rc=key.split(","); var R=+rc[0], C=+rc[1];
+          for(var k=0;k<w.length;k++){
+            if(w[k]!==cell.ch) continue;
+            var dirs=[]; if(!cell.v) dirs.push(1); if(!cell.h) dirs.push(0);
+            for(var di=0;di<dirs.length;di++){
+              var d=dirs[di], r0=d?R-k:R, c0=d?C:C-k;
+              var inter=canPlace(w,r0,c0,d);
+              if(inter>0){
+                var nMinR=Math.min(minR,r0), nMaxR=Math.max(maxR,d?r0+w.length-1:r0);
+                var nMinC=Math.min(minC,c0), nMaxC=Math.max(maxC,d?c0:c0+w.length-1);
+                var h=nMaxR-nMinR+1, wd=nMaxC-nMinC+1;
+                var score=inter*12 - (h*wd)/8 - Math.abs(wd-h*1.1)*1.5 + rnd()*6;
+                cands.push({r:r0,c:c0,d:d,s:score});
+              }
+            }
+          }
+        }
+        if(cands.length){cands.sort(function(x,y){return y.s-x.s;}); doPlace(idx,cands[0].r,cands[0].c,cands[0].d);}
+        else next.push(idx);
+      }
+      pending=next;
+    }
+    if(placed.length===N){
+      var H=maxR-minR+1, W=maxC-minC+1;
+      var acrossCount=placed.filter(function(p){return !p.d;}).length;
+      var score=H*W + Math.abs(W-H*1.1)*12 + Math.abs(acrossCount-N/2)*6;
+      if(!best||score<best.score){
+        best={score:score,rows:H,cols:W,placed:placed.map(function(p){return {i:p.i,r:p.r-minR,c:p.c-minC,d:p.d};})};
+      }
+    }
+  }
+  return best;
+}
+</script>
+
+<!-- ===================== UI ===================== -->
+<script>
+(function(){
+  var STORE="sehsA2crossword_SL_v4";
+  var saved=null; try{saved=JSON.parse(localStorage.getItem(STORE)||"null");}catch(e){}
+  var seed = saved && saved.seed ? saved.seed : 2027;
+  var L, entries, numbers, cellWords, clues, cur={r:0,c:0,d:0}, inputs={};
+  var hints=0, elapsed=0, timerOn=false, finished=false, tick=null;
+  var $=function(id){return document.getElementById(id);};
+
+  function setup(newSeed, restore){
+    L=buildCrossword(WORDS,newSeed);
+    if(!L){ // extremely unlikely; try neighbouring seeds
+      for(var s=1;s<50&&!L;s++) L=buildCrossword(WORDS,newSeed+s);
+    }
+    seed=newSeed;
+    entries={}; numbers={}; cellWords={}; inputs={};
+    // numbering
+    var starts=L.placed.slice().sort(function(a,b){return a.r-b.r||a.c-b.c;});
+    var n=0, startNum={};
+    starts.forEach(function(p){var k=p.r+","+p.c; if(!startNum[k]) startNum[k]=++n; p.n=startNum[k];});
+    numbers=startNum;
+    clues=L.placed.map(function(p,idx){
+      var w=WORDS[p.i], cells=[];
+      for(var k=0;k<w.a.length;k++){
+        var r=p.d?p.r+k:p.r, c=p.d?p.c:p.c+k, key=r+","+c;
+        cells.push(key);
+        cellWords[key]=cellWords[key]||{};
+        cellWords[key][p.d]=idx;
+        entries[key]=w.a[k];
+      }
+      return {n:p.n,d:p.d,w:w,cells:cells,idx:idx};
+    });
+    clues.sort(function(a,b){return a.d-b.d||a.n-b.n;});
+    clues.forEach(function(c,i){c.order=i;});
+    // remap cellWords to sorted indexes
+    cellWords={};
+    clues.forEach(function(cl,i){cl.cells.forEach(function(k){(cellWords[k]=cellWords[k]||{})[cl.d]=i;});});
+
+    state={}; revealed={}; checked={};
+    hints=0; elapsed=0; finished=false; timerOn=false;
+    if(restore && saved && saved.seed===newSeed){
+      state=saved.state||{}; revealed=saved.revealed||{}; hints=saved.hints||0; elapsed=saved.elapsed||0;
+    }
+    renderGrid(); renderClues(); renderBank(); fitCells();
+    var firstKey=clues[0].cells[0].split(","); select(+firstKey[0],+firstKey[1],clues[0].d,false);
+    updateStats(); if(isComplete()) finished=true;
+  }
+  var state={}, revealed={}, checked={};
+
+  function renderGrid(){
+    var g=$("grid"); g.innerHTML="";
+    g.style.gridTemplateColumns="repeat("+L.cols+",var(--cs))";
+    for(var r=0;r<L.rows;r++) for(var c=0;c<L.cols;c++){
+      var key=r+","+c;
+      if(entries[key]){
+        var d=document.createElement("div"); d.className="cell"; d.dataset.key=key;
+        if(numbers[key]){var s=document.createElement("span"); s.className="num"; s.textContent=numbers[key]; d.appendChild(s);}
+        var inp=document.createElement("input");
+        inp.setAttribute("maxlength","2"); inp.setAttribute("autocomplete","off"); inp.setAttribute("autocorrect","off");
+        inp.setAttribute("autocapitalize","characters"); inp.setAttribute("spellcheck","false");
+        inp.setAttribute("aria-label","Row "+(r+1)+" column "+(c+1));
+        inp.value=state[key]||"";
+        if(revealed[key]) d.classList.add("revealed");
+        (function(r,c,key){
+          inp.addEventListener("mousedown",function(e){
+            e.preventDefault();
+            if(cur.r===r&&cur.c===c){ var cw=cellWords[key]; if(cw[0]!==undefined&&cw[1]!==undefined) cur.d=1-cur.d; }
+            select(r,c,cur.d,true);
+          });
+          inp.addEventListener("focus",function(){ if(cur.r!==r||cur.c!==c) select(r,c,cur.d,false); });
+          inp.addEventListener("input",function(e){onInput(r,c,key,e.target);});
+          inp.addEventListener("keydown",function(e){onKey(r,c,key,e);});
+        })(r,c,key);
+        d.appendChild(inp); inputs[key]=inp; g.appendChild(d);
+      }else{
+        var e2=document.createElement("div"); e2.className="empty"; g.appendChild(e2);
+      }
+    }
+  }
+
+  function tagHTML(t){var names={1:"A.2.1",2:"A.2.2",3:"A.2.3"}; return '<span class="tag t'+t+'">'+names[t]+'</span>';}
+  function renderClues(){
+    $("across").innerHTML=""; $("down").innerHTML="";
+    clues.forEach(function(cl,i){
+      var li=document.createElement("li"); li.className="t"+cl.w.t; li.dataset.i=i;
+      li.innerHTML='<span class="n">'+cl.n+'</span><span><span class="ct">'+cl.w.c+'</span> <span class="enum">('+cl.w.e+')</span><span class="meta">'+tagHTML(cl.w.t)+'</span></span>';
+      li.addEventListener("click",function(){ var k=firstEmpty(cl).split(","); select(+k[0],+k[1],cl.d,true); });
+      $(cl.d?"down":"across").appendChild(li); cl.li=li;
+    });
+  }
+  function renderBank(){
+    var words=WORDS.map(function(w){return w.a;}).sort();
+    $("bankWords").innerHTML=words.map(function(w){return '<span data-w="'+w+'">'+w+'</span>';}).join("");
+    updateBank();
+  }
+  function updateBank(){
+    var done={}; clues.forEach(function(cl){ if(wordCorrect(cl)) done[cl.w.a]=1; });
+    Array.prototype.forEach.call($("bankWords").children,function(s){ s.classList.toggle("used",!!done[s.dataset.w] && $("instant").checked); });
+  }
+
+  function firstEmpty(cl){ for(var i=0;i<cl.cells.length;i++) if(!state[cl.cells[i]]) return cl.cells[i]; return cl.cells[0]; }
+  function curClue(){ var cw=cellWords[cur.r+","+cur.c]; if(!cw) return null; return clues[cw[cur.d]!==undefined?cw[cur.d]:cw[1-cur.d]]; }
+
+  function select(r,c,d,focus){
+    var key=r+","+c, cw=cellWords[key]; if(!cw) return;
+    if(cw[d]===undefined) d=1-d;
+    cur={r:r,c:c,d:d};
+    var cl=clues[cw[d]];
+    document.querySelectorAll(".cell.inword,.cell.active").forEach(function(el){el.classList.remove("inword","active");});
+    cl.cells.forEach(function(k){inputs[k].parentNode.classList.add("inword");});
+    inputs[key].parentNode.classList.add("active");
+    document.querySelectorAll(".clues li.sel").forEach(function(el){el.classList.remove("sel");});
+    cl.li.classList.add("sel");
+    if(cl.li.scrollIntoViewIfNeeded) cl.li.scrollIntoViewIfNeeded(false);
+    $("clueBar").innerHTML='<span class="lab">'+cl.n+(cl.d?' Down':' Across')+'</span>'+tagHTML(cl.w.t)+' '+cl.w.c+' <span class="enum" style="color:#cbd5e1">('+cl.w.e+')</span>';
+    if(focus!==false && document.activeElement!==inputs[key]) inputs[key].focus({preventScroll:true});
+  }
+
+  function move(dr,dc){
+    var r=cur.r+dr, c=cur.c+dc;
+    while(r>=0&&c>=0&&r<L.rows&&c<L.cols){ if(entries[r+","+c]){ select(r,c,cur.d,true); return true;} r+=dr; c+=dc; }
+    return false;
+  }
+  function stepInWord(dir){
+    var cl=curClue(), key=cur.r+","+cur.c, i=cl.cells.indexOf(key)+dir;
+    if(i>=0&&i<cl.cells.length){var k=cl.cells[i].split(","); select(+k[0],+k[1],cl.d,true); return true;}
+    return false;
+  }
+  function jumpClue(dir){
+    var cl=curClue(), i=(cl.order+dir+clues.length)%clues.length, n=clues[i];
+    var k=firstEmpty(n).split(","); select(+k[0],+k[1],n.d,true);
+  }
+
+  function startTimer(){ if(timerOn||finished) return; timerOn=true; tick=setInterval(function(){elapsed++; $("sTime").textContent=fmt(elapsed); if(elapsed%5===0) save();},1000); }
+  function fmt(s){var m=Math.floor(s/60), x=s%60; return m+":"+(x<10?"0":"")+x;}
+
+  function setCell(key,ch){
+    state[key]=ch; inputs[key].value=ch;
+    var cell=inputs[key].parentNode; cell.classList.remove("good","bad");
+    delete checked[key];
+    if(!ch) {cell.classList.remove("revealed"); delete revealed[key];}
+    if($("instant").checked && ch) cell.classList.add(ch===entries[key]?"good":"bad");
+  }
+
+  function onInput(r,c,key,el){
+    var v=(el.value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    var ch=v.slice(-1);
+    // if both old+new present, take the new char
+    if(v.length>1 && state[key] && v[0]===state[key]) ch=v[1];
+    if(revealed[key]){ el.value=state[key]; stepInWord(1); return; }
+    setCell(key,ch); startTimer();
+    if(ch){ if(!stepInWord(1)) {/* end of word: stay */} }
+    after();
+  }
+  function onKey(r,c,key,e){
+    var k=e.key;
+    if(k==="Backspace"){
+      e.preventDefault();
+      if(state[key] && !revealed[key]){ setCell(key,""); }
+      else { if(stepInWord(-1)){ var nk=cur.r+","+cur.c; if(!revealed[nk]) setCell(nk,""); } }
+      after(); return;
+    }
+    if(k==="Delete"){ e.preventDefault(); if(!revealed[key]) setCell(key,""); after(); return; }
+    if(k==="ArrowRight"){e.preventDefault(); if(cur.d!==0&&cellWords[key][0]!==undefined){select(r,c,0,true);} else move(0,1); return;}
+    if(k==="ArrowLeft"){e.preventDefault(); if(cur.d!==0&&cellWords[key][0]!==undefined){select(r,c,0,true);} else move(0,-1); return;}
+    if(k==="ArrowDown"){e.preventDefault(); if(cur.d!==1&&cellWords[key][1]!==undefined){select(r,c,1,true);} else move(1,0); return;}
+    if(k==="ArrowUp"){e.preventDefault(); if(cur.d!==1&&cellWords[key][1]!==undefined){select(r,c,1,true);} else move(-1,0); return;}
+    if(k===" "){e.preventDefault(); var cw=cellWords[key]; if(cw[0]!==undefined&&cw[1]!==undefined) select(r,c,1-cur.d,true); return;}
+    if(k==="Tab"||k==="Enter"){e.preventDefault(); jumpClue(e.shiftKey?-1:1); return;}
+    // overwrite: if a letter key pressed on filled cell, clear first so input event yields the new char
+    if(k.length===1 && /[a-z0-9]/i.test(k) && !e.ctrlKey && !e.metaKey){
+      e.preventDefault();
+      if(revealed[key]){ stepInWord(1); return; }
+      setCell(key,k.toUpperCase()); startTimer(); stepInWord(1); after();
+    }
+  }
+
+  function wordCorrect(cl){ return cl.cells.every(function(k){return state[k]===entries[k];}); }
+  function isComplete(){ for(var k in entries) if(state[k]!==entries[k]) return false; return true; }
+
+  function updateStats(){
+    var tot=0, fill=0; for(var k in entries){tot++; if(state[k]) fill++;}
+    $("sFill").textContent=Math.round(fill/tot*100)+"%";
+    $("sHints").textContent=hints; $("sTime").textContent=fmt(elapsed);
+    if($("instant").checked){
+      var n=clues.filter(wordCorrect).length; $("sWords").textContent=n+"/30";
+      clues.forEach(function(cl){cl.li.classList.toggle("done",wordCorrect(cl));});
+    }
+  }
+  function after(){
+    updateStats(); updateBank(); save();
+    if(!finished && isComplete()){ finished=true; clearInterval(tick); timerOn=false; celebrate(); }
+  }
+  function celebrate(){
+    clues.forEach(function(cl){cl.li.classList.add("done");});
+    for(var k in entries) inputs[k].parentNode.classList.add("good");
+    $("sWords").textContent="30/30";
+    $("mTime").textContent=fmt(elapsed);
+    $("mMsg").textContent = hints===0 ? "All 30 terms correct with no hints. Outstanding!" :
+      "All 30 terms correct. Hints used: "+hints+". Try again with zero hints!";
+    $("overlay").classList.add("show"); save();
+  }
+
+  function markCells(keys){
+    var wrong=0;
+    keys.forEach(function(k){
+      var cell=inputs[k].parentNode; cell.classList.remove("good","bad");
+      if(state[k]){ if(state[k]===entries[k]) cell.classList.add("good"); else {cell.classList.add("bad"); wrong++;} }
+    });
+    return wrong;
+  }
+  function save(){ try{localStorage.setItem(STORE,JSON.stringify({seed:seed,state:state,revealed:revealed,hints:hints,elapsed:elapsed}));}catch(e){} }
+
+  // ---------- buttons ----------
+  $("checkAll").onclick=function(){
+    markCells(Object.keys(entries));
+    var n=clues.filter(wordCorrect).length; $("sWords").textContent=n+"/30";
+    clues.forEach(function(cl){cl.li.classList.toggle("done",wordCorrect(cl));});
+  };
+  $("checkWord").onclick=function(){ var cl=curClue(); markCells(cl.cells); cl.li.classList.toggle("done",wordCorrect(cl)); };
+  $("revealLetter").onclick=function(){
+    var key=cur.r+","+cur.c; if(state[key]===entries[key]) return;
+    setCell(key,entries[key]); revealed[key]=1; inputs[key].parentNode.classList.add("revealed"); hints++; stepInWord(1); after();
+  };
+  $("revealWord").onclick=function(){
+    var cl=curClue(), used=false;
+    cl.cells.forEach(function(k){ if(state[k]!==entries[k]){ setCell(k,entries[k]); revealed[k]=1; inputs[k].parentNode.classList.add("revealed"); used=true; } });
+    if(used) hints++; cl.li.classList.add("done"); after();
+  };
+  $("revealAll").onclick=function(){
+    if(!confirm("Reveal every answer? (Teacher / answer-key mode)")) return;
+    for(var k in entries){ if(state[k]!==entries[k]){ setCell(k,entries[k]); revealed[k]=1; inputs[k].parentNode.classList.add("revealed"); } }
+    hints+=30; finished=true; clearInterval(tick); timerOn=false;
+    clues.forEach(function(cl){cl.li.classList.add("done");}); updateStats(); updateBank(); save();
+  };
+  $("clearBtn").onclick=function(){
+    if(!confirm("Clear the whole grid and reset the timer?")) return;
+    clearInterval(tick); setup(seed,false); save();
+  };
+  $("newLayout").onclick=function(){
+    if(!confirm("Generate a new grid layout? Your current answers will be cleared.")) return;
+    clearInterval(tick); setup(Math.floor(Math.random()*1e6)+1,false); save();
+  };
+  $("printBtn").onclick=function(){ window.print(); };
+  $("prevClue").onclick=function(){ jumpClue(-1); };
+  $("nextClue").onclick=function(){ jumpClue(1); };
+  $("instant").onchange=function(){
+    for(var k in entries){ var cell=inputs[k].parentNode; cell.classList.remove("good","bad"); }
+    if(this.checked) markCells(Object.keys(entries));
+    else { clues.forEach(function(cl){cl.li.classList.remove("done");}); $("sWords").textContent="–"; }
+    updateStats(); updateBank();
+  };
+  $("showBank").onchange=function(){ $("bank").classList.toggle("show",this.checked); };
+  $("mClose").onclick=function(){ $("overlay").classList.remove("show"); };
+  $("mAgain").onclick=function(){ $("overlay").classList.remove("show"); clearInterval(tick); setup(Math.floor(Math.random()*1e6)+1,false); save(); };
+
+  // ---------- sizing ----------
+  function fitCells(){
+    var avail=$("gridWrap").clientWidth-4;
+    var cs=Math.max(window.innerWidth>900?18:24,Math.min(40,Math.floor(avail/L.cols)));
+    document.documentElement.style.setProperty("--cs",cs+"px");
+  }
+  window.addEventListener("resize",function(){ if(L) fitCells(); });
+
+  setup(seed,true);
+})();
+</script>
+</body>
+</html>
